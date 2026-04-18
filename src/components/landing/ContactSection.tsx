@@ -31,7 +31,11 @@ const ContactSection = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from("contact_messages").insert(parsed.data);
+    const { error } = await supabase.from("contact_messages").insert({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      message: parsed.data.message,
+    });
     setLoading(false);
     if (error) toast({ title: "Failed to send", description: error.message, variant: "destructive" });
     else {
