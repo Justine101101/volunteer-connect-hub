@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Heart } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, Heart, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { label: "Home", path: "/" },
@@ -15,6 +17,10 @@ const navLinks = [
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, role } = useAuth();
+
+  const dashHref = role === "admin" ? "/admin" : "/dashboard";
 
   return (
     <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -24,7 +30,6 @@ const Navbar = () => {
           <span className="gradient-text">VolunteerHub</span>
         </Link>
 
-        {/* Desktop */}
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
             <Link
@@ -39,20 +44,23 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          <Link to="/join">
-            <Button size="sm" className="ml-3">
-              Join Us
+          {user ? (
+            <Button size="sm" className="ml-3 gap-2" onClick={() => navigate(dashHref)}>
+              <LayoutDashboard className="h-4 w-4" /> Dashboard
             </Button>
-          </Link>
+          ) : (
+            <>
+              <Link to="/auth"><Button size="sm" variant="ghost" className="ml-2">Sign In</Button></Link>
+              <Link to="/auth" state={{ mode: "signup" }}><Button size="sm" className="ml-1">Join Us</Button></Link>
+            </>
+          )}
         </div>
 
-        {/* Mobile toggle */}
         <button className="md:hidden p-2" onClick={() => setOpen(!open)}>
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -76,9 +84,20 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
-              <Link to="/join" onClick={() => setOpen(false)}>
-                <Button className="w-full mt-2">Join Us</Button>
-              </Link>
+              {user ? (
+                <Button className="w-full mt-2 gap-2" onClick={() => { setOpen(false); navigate(dashHref); }}>
+                  <LayoutDashboard className="h-4 w-4" /> Dashboard
+                </Button>
+              ) : (
+                <>
+                  <Link to="/auth" onClick={() => setOpen(false)}>
+                    <Button variant="outline" className="w-full mt-2">Sign In</Button>
+                  </Link>
+                  <Link to="/auth" state={{ mode: "signup" }} onClick={() => setOpen(false)}>
+                    <Button className="w-full mt-2">Join Us</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </motion.div>
         )}
